@@ -16,7 +16,7 @@ public Plugin myinfo =
     name = "Toggle Bullet Impact Sounds",
     author = "koen", // Inspiration from both Snowy and AntiTeal's plugins
     description = "Allow clients to toggle bullet impact sounds",
-    version = "1.0",
+    version = "1.0.1",
     url = ""
 };
 
@@ -71,7 +71,7 @@ public Action SoundHook(int clients[64], int &numClients, char sound[PLATFORM_MA
         {
             if (g_bBlockImpactSound[clients[i]])
             {
-                for (int j = 1; j , numClients - 1; j++)
+                for (int j = 1; j < numClients - 1; j++)
                 {
                     clients[j] = clients[j+1];
                 }
