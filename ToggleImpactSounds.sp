@@ -4,7 +4,6 @@
 #include <sourcemod>
 #include <sdktools>
 #include <clientprefs>
-#include <csgocolors_fix>
 
 Cookie g_hImpactSound;
 int g_bBlockImpactSound[MAXPLAYERS+1] = {true, ...};
@@ -16,8 +15,8 @@ public Plugin myinfo =
     name = "Toggle Bullet Impact Sounds",
     author = "koen", // Inspiration from both Snowy and AntiTeal's plugins
     description = "Allow clients to toggle bullet impact sounds",
-    version = "1.0.1",
-    url = ""
+    version = "1.1",
+    url = "https://github.com/notkoen"
 };
 
 public void OnPluginStart()
@@ -52,7 +51,7 @@ public void OnClientDisconnect(int client)
 
 public void OnClientCookiesCached(int client)
 {
-    if (!IsValidClient(client)) return;
+    if (!IsClientInGame(client)) return;
     
     char cookie[2];
     GetClientCookie(client, g_hImpactSound, cookie, sizeof(cookie));
@@ -103,10 +102,7 @@ public void CookieHandler(int client, CookieMenuAction action, any info, char[] 
 
 public Action Command_ImpactSound(int client, int args)
 {
-    if (!IsValidClient(client))
-    {
-        return Plugin_Handled;
-    }
+    if (!IsClientInGame(client)) return Plugin_Handled;
     
     ToggleImpactSound(client);
     return Plugin_Handled;
@@ -115,13 +111,6 @@ public Action Command_ImpactSound(int client, int args)
 void ToggleImpactSound(int client)
 {
     g_bBlockImpactSound[client] = !g_bBlockImpactSound[client];
-    CPrintToChat(client, "{red}[Sound] {default}You have %s {default}bullet impact sounds.", g_bBlockImpactSound[client] ? "{red}disabled" : "{green}enabled");
+    PrintToChat(client, " \x04[Sounds] \x01You have %s \x01bullet impact sounds.", g_bBlockImpactSound[client] ? "\x02disabled" : "\x04enabled");
     SetClientCookie(client, g_hImpactSound, g_bBlockImpactSound[client] ? "1" : "");
-}
-
-bool IsValidClient(int client, bool nobots = true)
-{
-    if (client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)))
-        return false;
-    return IsClientInGame(client);
 }
