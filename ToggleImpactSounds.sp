@@ -6,29 +6,29 @@
 #include <clientprefs>
 
 Cookie g_hImpactSound;
-int g_bBlockImpactSound[MAXPLAYERS+1] = {true, ...};
+int g_bBlockSound[MAXPLAYERS+1] = {true, ...};
 
 ConVar g_cvLowVolume;
 
 public Plugin myinfo =
 {
     name = "Toggle Bullet Impact Sounds",
-    author = "koen", // Inspiration from both Snowy and AntiTeal's plugins
+    author = "koen", // Inspiration from Snowy & AntiTeal plugins
     description = "Allow clients to toggle bullet impact sounds",
     version = "1.1",
-    url = "https://github.com/notkoen"
+    url = ""
 };
 
 public void OnPluginStart()
 {
     // Register client cookie
-    g_hImpactSound = RegClientCookie("impact_sounds", "Bullet impact sounds", CookieAccess_Private);
+    g_hImpactSound = RegClientCookie("impact_sounds", "Bullet impact sound cookies", CookieAccess_Private);
     
-    // Plugin Cvars
-    g_cvLowVolume = CreateConVar("sm_impact_volume", "0.2", "Set adjusted volume of bullet impact sounds", _, true, 0.0, true, 1.0);
+    // Plugin convars
+    g_cvLowVolume = CreateConVar("sm_impact_volume", "0.0", "Set adjusted volume of bullet impact sounds", _, true, 0.0, true, 1.0);
     AutoExecConfig(true);
     
-    // Register plugin command
+    // Plugin command
     RegConsoleCmd("sm_stopsoundmore", Command_ImpactSound, "Toggle bullet impact sounds");
     RegConsoleCmd("sm_impactsounds", Command_ImpactSound, "Toggle bullet impact sounds");
     
@@ -39,14 +39,9 @@ public void OnPluginStart()
     AddNormalSoundHook(SoundHook);
 }
 
-public void OnClientPostAdminCheck(int client)
-{
-    OnClientCookiesCached(client);
-}
-
 public void OnClientDisconnect(int client)
 {
-    g_bBlockImpactSound[client] = true;
+    g_bBlockSound[client] = true;
 }
 
 public void OnClientCookiesCached(int client)
@@ -55,22 +50,20 @@ public void OnClientCookiesCached(int client)
     
     char cookie[2];
     GetClientCookie(client, g_hImpactSound, cookie, sizeof(cookie));
-    g_bBlockImpactSound[client] = StrEqual(cookie, "1");
+    g_bBlockSound[client] = StrEqual(cookie, "1");
 }
 
 public Action SoundHook(int clients[64], int &numClients, char sound[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags)
 {
-    if ((StrContains(sound, "physics/flesh/flesh_impact_bullet") != -1) ||
-        (StrContains(sound, "player/headshot") != -1) ||
-        (StrContains(sound, "player/kevlar") != -1) ||
-        (StrContains(sound, "player/headshot") != -1) ||
+    if ((StrContains(sound, "physics/flesh/flesh_impact_bullet") != -1) || (StrContains(sound, "player/headshot") != -1) ||
+        (StrContains(sound, "player/kevlar") != -1) || (StrContains(sound, "player/headshot") != -1) ||
         (StrContains(sound, "player/bhit_helmet") != -1))
     {
         for (int i = 0; i < numClients; i++)
         {
-            if (g_bBlockImpactSound[clients[i]])
+            if (g_bBlockSound[clients[i]])
             {
-                for (int j = 1; j < numClients - 1; j++)
+                for (int j = i; j < numClients - 1; j++)
                 {
                     clients[j] = clients[j+1];
                 }
@@ -90,7 +83,7 @@ public void CookieHandler(int client, CookieMenuAction action, any info, char[] 
     {
         case CookieMenuAction_DisplayOption:
         {
-            FormatEx(buffer, maxlen, "Bullet Impact Sounds: %s", g_bBlockImpactSound[client] ? "Disabled" : "Enabled");
+            FormatEx(buffer, maxlen, "Bullet Impact Sounds: %s", g_bBlockSound[client] ? "Disabled" : "Enabled");
         }
         case CookieMenuAction_SelectOption:
         {
@@ -103,14 +96,13 @@ public void CookieHandler(int client, CookieMenuAction action, any info, char[] 
 public Action Command_ImpactSound(int client, int args)
 {
     if (!IsClientInGame(client)) return Plugin_Handled;
-    
     ToggleImpactSound(client);
     return Plugin_Handled;
 }
 
 void ToggleImpactSound(int client)
 {
-    g_bBlockImpactSound[client] = !g_bBlockImpactSound[client];
-    PrintToChat(client, " \x04[Sounds] \x01You have %s \x01bullet impact sounds.", g_bBlockImpactSound[client] ? "\x02disabled" : "\x04enabled");
-    SetClientCookie(client, g_hImpactSound, g_bBlockImpactSound[client] ? "1" : "");
+    g_bBlockSound[client] = !g_bBlockSound[client];
+    CPrintToChat(client, " \x04[SM] \x01You have %s \x01bullet impact sounds.", g_bBlockSound[client] ? "\x02disabled" : "\x04enabled");
+    SetClientCookie(client, g_hImpactSound, g_bBlockSound[client] ? "1" : "0");
 }
