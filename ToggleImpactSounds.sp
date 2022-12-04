@@ -15,7 +15,7 @@ public Plugin myinfo =
     name = "Toggle Bullet Impact Sounds",
     author = "koen", // Inspiration from Snowy & AntiTeal plugins
     description = "Allow clients to toggle bullet impact sounds",
-    version = "1.1",
+    version = "1.2",
     url = ""
 };
 
@@ -50,6 +50,14 @@ public void OnClientCookiesCached(int client)
     
     char cookie[2];
     GetClientCookie(client, g_hImpactSound, cookie, sizeof(cookie));
+    
+    if (cookie[0] == '\0')
+    {
+        g_bBlockSound[client] = true;
+        SetClientCookie(client, g_hImpactSound, g_bBlockSound[client] ? "1" : "0");
+        return;
+    }
+    
     g_bBlockSound[client] = StrEqual(cookie, "1");
 }
 
@@ -83,7 +91,7 @@ public void CookieHandler(int client, CookieMenuAction action, any info, char[] 
     {
         case CookieMenuAction_DisplayOption:
         {
-            FormatEx(buffer, maxlen, "Bullet Impact Sounds: %s", g_bBlockSound[client] ? "Disabled" : "Enabled");
+            Format(buffer, maxlen, "Bullet Impact Sounds: %s", g_bBlockSound[client] ? "Disabled" : "Enabled");
         }
         case CookieMenuAction_SelectOption:
         {
@@ -103,6 +111,6 @@ public Action Command_ImpactSound(int client, int args)
 void ToggleImpactSound(int client)
 {
     g_bBlockSound[client] = !g_bBlockSound[client];
-    CPrintToChat(client, " \x04[SM] \x01You have %s \x01bullet impact sounds.", g_bBlockSound[client] ? "\x02disabled" : "\x04enabled");
+    PrintToChat(client, " \x04[SM] \x01You have %s \x01bullet impact sounds.", g_bBlockSound[client] ? "\x02disabled" : "\x04enabled");
     SetClientCookie(client, g_hImpactSound, g_bBlockSound[client] ? "1" : "0");
 }
