@@ -46,8 +46,6 @@ public void OnClientDisconnect(int client)
 
 public void OnClientCookiesCached(int client)
 {
-    if (!IsClientInGame(client)) return;
-    
     char cookie[2];
     GetClientCookie(client, g_hImpactSound, cookie, sizeof(cookie));
     
