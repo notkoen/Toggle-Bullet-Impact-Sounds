@@ -15,7 +15,7 @@ public Plugin myinfo =
 	name = "Toggle Impact Sounds",
 	author = "Snowy, koen", // With additional code from AntiTeal
 	description = "Adjust volume of body shot and headshot sounds",
-	version = "2.0",
+	version = "2.1",
 	url = ""
 };
 
@@ -125,18 +125,21 @@ public Action SoundHook(int clients[MAXPLAYERS], int& numClients, char sample[PL
 {
 	if ((StrContains(sample, "physics/flesh/flesh_impact_bullet") != -1) || (StrContains(sample, "player/headshot") != -1))
 	{
+		int newClients[MAXPLAYERS];
+		int newClientsIndex = 0;
+
 		for (int i = 0; i < numClients; i++)
 		{
-			if (!g_bSound[clients[i]])
+			if (g_bSound[clients[i]])
 			{
-				for (int j = i; j < numClients-1; j++)
-				{
-					clients[j] = clients[j+1];
-				}
-				numClients--;
-				i--;
+				newClients[newClientsIndex] = clients[i];
+				newClientsIndex++;
 			}
 		}
+
+		numClients = newClientsIndex;
+		clients = newClients;
+
 		volume = g_cvVolume.FloatValue;
 		return Plugin_Changed;
 	}
